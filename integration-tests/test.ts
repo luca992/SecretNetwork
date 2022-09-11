@@ -1376,8 +1376,28 @@ describe("Wasm Query", () => {
         },
       });
 
-      console.log("result", result);
       expect(result).toBe("no ack yet");
+    });
+
+    test("fail - unexistent v1 message", async () => {
+      const result: any = await readonly.query.compute.queryContract({
+        contractAddress: contracts["secretdev-1"].v010.address,
+        codeHash: contracts["secretdev-1"].v010.codeHash,
+        query: {
+          wasm_smart: {
+            contract_addr: contracts["secretdev-1"].v1.address,
+            callback_code_hash: contracts["secretdev-1"].v1.codeHash,
+            msg: toBase64(Buffer.from('{ "no_such_message": {} }')),
+          },
+        },
+      });
+
+      console.log("result", result);
+      const parsedRes = JSON.parse(result);
+      expect(parsedRes?.generic_err.msg.startsWith(
+        "Querier system error: Cannot parse response: expected value at line 1 column 1 in: " +
+        "Error parsing into type contract_v1::msg::QueryMsg: unknown variant `no_such_message`"
+      )).toBe(true);
     });
   });
 });
