@@ -1259,7 +1259,7 @@ describe("Staking Query", () => {
   });
 
   describe("Validators", () => {
-    test.only("v0.10", async () => {
+    test("v0.10", async () => {
       const result: any = await readonly.query.compute.queryContract({
         contractAddress: contracts["secretdev-1"].v010.address,
         codeHash: contracts["secretdev-1"].v010.codeHash,
@@ -1267,7 +1267,6 @@ describe("Staking Query", () => {
           staking_validators: {},
         },
       });
-      console.log("result", JSON.stringify(result));
 
       expect(result?.validators.length).toBe(1);
       expect(result?.validators[0]).toStrictEqual({
@@ -1275,6 +1274,69 @@ describe("Staking Query", () => {
         commission: "0.1",
         max_commission: "0.2",
         max_change_rate: "0.01"
+      });
+    });
+  });
+
+  describe("Unbonding Delegations", () => {
+    describe("v0.10", () => {
+      test("success", async () => {
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            staking_unbonding_delegations: { delegator: accounts[0].address },
+          },
+        });
+
+        expect(result?.delegations.length).toBe(0);
+      });
+    });
+
+    // disabled for now because there's a bug that causes a different failure from the expected
+    test.skip("fail - bad address", async () => {
+      const result: any = await readonly.query.compute.queryContract({
+        contractAddress: contracts["secretdev-1"].v010.address,
+        codeHash: contracts["secretdev-1"].v010.codeHash,
+        query: {
+          staking_unbonding_delegations: { delegator: 'secret1nosuchaddress' },
+        },
+      });
+
+      expect(JSON.parse(result)?.generic_err?.msg).toBe("secret1nosuchaddress: invalid address");
+    });
+  });
+});
+
+describe("Distribution Query", () => {
+  describe("Rewards", () => {
+    describe("v0.10", () => {
+      test.only("success", async () => {
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            dist_rewards: { delegator: accounts[0].address },
+          },
+        });
+
+        expect(result?.rewards.length).toBe(1);
+        expect(result?.rewards[0].validator_address).toBe("secretvaloper1ap26qrlp8mcq2pg6r47w43l0y8zkqm8aynpdzc");
+        expect(Object.keys(result?.rewards[0].reward[0])).toEqual(expect.arrayContaining(["denom", "amount"]));
+        expect(result?.total.length).toBe(1);
+        expect(result?.total[0].denom).toBe('uscrt');
+      });
+
+      test("fail - bad address", async () => {
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            dist_rewards: { delegator: 'secret1nosuchaddress' },
+          },
+        });
+
+        expect(JSON.parse(result)?.generic_err?.msg).toBe("secret1nosuchaddress: invalid address");
       });
     });
   });
