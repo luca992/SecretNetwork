@@ -1392,7 +1392,6 @@ describe("Wasm Query", () => {
         },
       });
 
-      console.log("result", result);
       const parsedRes = JSON.parse(result);
       expect(parsedRes?.generic_err.msg.startsWith(
         "Querier system error: Cannot parse response: expected value at line 1 column 1 in: " +
