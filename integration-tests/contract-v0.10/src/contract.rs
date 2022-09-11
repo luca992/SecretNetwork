@@ -1,8 +1,4 @@
-use cosmwasm_std::{
-    to_binary, Api, BalanceResponse, BankMsg, BankQuery, Binary, Coin, CosmosMsg, Empty, Env,
-    Extern, GovMsg, HandleResponse, HandleResult, HumanAddr, InitResponse, InitResult,
-    LogAttribute, Querier, QueryRequest, QueryResult, StakingMsg, Storage, VoteOption, WasmMsg,
-};
+use cosmwasm_std::{to_binary, Api, BalanceResponse, BankMsg, BankQuery, Binary, Coin, CosmosMsg, Empty, Env, Extern, GovMsg, HandleResponse, HandleResult, HumanAddr, InitResponse, InitResult, LogAttribute, Querier, QueryRequest, QueryResult, StakingMsg, Storage, VoteOption, WasmMsg, StakingQuery, WasmQuery, DistQuery, MintQuery, GovQuery};
 
 /////////////////////////////// Messages ///////////////////////////////
 
@@ -62,6 +58,28 @@ pub enum Msg {
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     BankBalance { address: HumanAddr, denom: String },
+    StakingBondedDenom {},
+    StakingAllDelegations { delegator: HumanAddr },
+    StakingDelegation {
+        delegator: HumanAddr,
+        validator: HumanAddr,
+    },
+    StakingValidators {},
+    StakingUnbondingDelegations { delegator: HumanAddr },
+    WasmSmart {
+        contract_addr: HumanAddr,
+        callback_code_hash: String,
+        msg: Binary,
+    },
+    WasmRaw {
+        contract_addr: HumanAddr,
+        key: Binary,
+        callback_code_hash: String,
+    },
+    DistRewards { delegator: HumanAddr },
+    MintInflation {},
+    MintBondedRatio {},
+    GovProposals {},
 }
 
 /////////////////////////////// Init ///////////////////////////////
@@ -85,7 +103,7 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     msg: Msg,
 ) -> HandleResult {
     match msg {
-        Msg::Nop { } => Ok(HandleResponse {
+        Msg::Nop {} => Ok(HandleResponse {
             messages: vec![],
             log: vec![],
             data: None,
@@ -206,6 +224,100 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
                         address,
                         denom,
                     }))?;
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::StakingBondedDenom {} => {
+            let res =
+                deps.querier
+                    .query::<BalanceResponse>(&QueryRequest::Staking(StakingQuery::BondedDenom {}))?;
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::StakingAllDelegations { delegator } => {
+            let res =
+                deps.querier
+                    .query::<BalanceResponse>(&QueryRequest::Staking(StakingQuery::AllDelegations {
+                        delegator,
+                    }))?;
+
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::StakingDelegation { delegator, validator } => {
+            let res =
+                deps.querier
+                    .query::<BalanceResponse>(&QueryRequest::Staking(StakingQuery::Delegation {
+                        delegator,
+                        validator,
+                    }))?;
+
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::StakingValidators {} => {
+            let res =
+                deps.querier
+                    .query::<BalanceResponse>(&QueryRequest::Staking(StakingQuery::Validators {}))?;
+
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::StakingUnbondingDelegations { delegator } => {
+            let res =
+                deps.querier
+                    .query::<BalanceResponse>(&QueryRequest::Staking(StakingQuery::UnbondingDelegations {
+                        delegator,
+                    }))?;
+
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::WasmSmart { contract_addr, callback_code_hash, msg } => {
+            let res =
+                deps.querier
+                    .query::<BalanceResponse>(&QueryRequest::Wasm(WasmQuery::Smart {
+                        contract_addr,
+                        callback_code_hash,
+                        msg: Default::default()
+                    }))?;
+
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::WasmRaw { contract_addr, key, callback_code_hash } => {
+            let res =
+                deps.querier
+                    .query::<BalanceResponse>(&QueryRequest::Wasm(WasmQuery::Raw {
+                        contract_addr,
+                        key,
+                        callback_code_hash
+                    }))?;
+
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::DistRewards { delegator } => {
+            let res =
+                deps.querier
+                    .query::<BalanceResponse>(&QueryRequest::Dist(DistQuery::Rewards {
+                        delegator,
+                    }))?;
+
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::MintInflation {} => {
+            let res =
+                deps.querier
+                    .query::<BalanceResponse>(&QueryRequest::Mint(MintQuery::Inflation {}))?;
+
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::MintBondedRatio {} => {
+            let res =
+                deps.querier
+                    .query::<BalanceResponse>(&QueryRequest::Mint(MintQuery::BondedRatio {
+                    }))?;
+
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::GovProposals {} => {
+            let res =
+                deps.querier
+                    .query::<BalanceResponse>(&QueryRequest::Gov(GovQuery::Proposals {}))?;
+
             return Ok(to_binary(&res)?);
         }
     }
