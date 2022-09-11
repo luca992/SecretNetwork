@@ -1193,6 +1193,20 @@ describe("BankQuery", () => {
       expect(Number(result?.amount?.amount)).toBeGreaterThanOrEqual(1);
     });
   });
+
+  describe("Staking Bonded Denom", () => {
+    test.only("v0.10", async () => {
+      const result: any = await readonly.query.compute.queryContract({
+        contractAddress: contracts["secretdev-1"].v010.address,
+        codeHash: contracts["secretdev-1"].v010.codeHash,
+        query: {
+          staking_bonded_denom: {},
+        },
+      });
+      console.log("result", result);
+      expect(result?.denom).toBe("uscrt");
+    });
+  });
 });
 
 describe("IBC", () => {
