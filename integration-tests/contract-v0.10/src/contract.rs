@@ -1,4 +1,4 @@
-use cosmwasm_std::{to_binary, Api, BalanceResponse, BankMsg, BankQuery, Binary, Coin, CosmosMsg, Empty, Env, Extern, GovMsg, HandleResponse, HandleResult, HumanAddr, InitResponse, InitResult, LogAttribute, Querier, QueryRequest, QueryResult, StakingMsg, Storage, VoteOption, WasmMsg, StakingQuery, WasmQuery, DistQuery, MintQuery, GovQuery};
+use cosmwasm_std::{to_binary, Api, BalanceResponse, BankMsg, BankQuery, Binary, Coin, CosmosMsg, Empty, Env, Extern, GovMsg, HandleResponse, HandleResult, HumanAddr, InitResponse, InitResult, LogAttribute, Querier, QueryRequest, QueryResult, StakingMsg, Storage, VoteOption, WasmMsg, StakingQuery, WasmQuery, DistQuery, MintQuery, GovQuery, BondedDenomResponse, AllDelegationsResponse, UnbondingDelegationsResponse, RewardsResponse, InflationResponse, BondedRatioResponse, ProposalsResponse, ValidatorsResponse};
 
 /////////////////////////////// Messages ///////////////////////////////
 
@@ -229,70 +229,70 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
         QueryMsg::StakingBondedDenom {} => {
             let res =
                 deps.querier
-                    .query::<BalanceResponse>(&QueryRequest::Staking(StakingQuery::BondedDenom {}))?;
+                    .query::<BondedDenomResponse>(&QueryRequest::Staking(StakingQuery::BondedDenom {}))?;
             return Ok(to_binary(&res)?);
         }
         QueryMsg::StakingAllDelegations { delegator } => {
             let res =
                 deps.querier
-                    .query::<BalanceResponse>(&QueryRequest::Staking(StakingQuery::AllDelegations {
+                    .query::<AllDelegationsResponse>(&QueryRequest::Staking(StakingQuery::AllDelegations {
                         delegator,
                     }))?;
 
             return Ok(to_binary(&res)?);
         }
-        QueryMsg::StakingDelegation { delegator, validator } => {
-            let res =
-                deps.querier
-                    .query::<BalanceResponse>(&QueryRequest::Staking(StakingQuery::Delegation {
-                        delegator,
-                        validator,
-                    }))?;
-
-            return Ok(to_binary(&res)?);
-        }
+        // QueryMsg::StakingDelegation { delegator, validator } => {
+        //     let res =
+        //         deps.querier
+        //             .query::<DelegationResponse>(&QueryRequest::Staking(StakingQuery::Delegation {
+        //                 delegator,
+        //                 validator,
+        //             }))?;
+        //
+        //     return Ok(to_binary(&res)?);
+        // }
         QueryMsg::StakingValidators {} => {
             let res =
                 deps.querier
-                    .query::<BalanceResponse>(&QueryRequest::Staking(StakingQuery::Validators {}))?;
+                    .query::<ValidatorsResponse>(&QueryRequest::Staking(StakingQuery::Validators {}))?;
 
             return Ok(to_binary(&res)?);
         }
         QueryMsg::StakingUnbondingDelegations { delegator } => {
             let res =
                 deps.querier
-                    .query::<BalanceResponse>(&QueryRequest::Staking(StakingQuery::UnbondingDelegations {
+                    .query::<UnbondingDelegationsResponse>(&QueryRequest::Staking(StakingQuery::UnbondingDelegations {
                         delegator,
                     }))?;
 
             return Ok(to_binary(&res)?);
         }
-        QueryMsg::WasmSmart { contract_addr, callback_code_hash, msg } => {
-            let res =
-                deps.querier
-                    .query::<BalanceResponse>(&QueryRequest::Wasm(WasmQuery::Smart {
-                        contract_addr,
-                        callback_code_hash,
-                        msg: Default::default()
-                    }))?;
-
-            return Ok(to_binary(&res)?);
-        }
-        QueryMsg::WasmRaw { contract_addr, key, callback_code_hash } => {
-            let res =
-                deps.querier
-                    .query::<BalanceResponse>(&QueryRequest::Wasm(WasmQuery::Raw {
-                        contract_addr,
-                        key,
-                        callback_code_hash
-                    }))?;
-
-            return Ok(to_binary(&res)?);
-        }
+        // QueryMsg::WasmSmart { contract_addr, callback_code_hash, msg } => {
+        //     let res =
+        //         deps.querier
+        //             .query::<SmartResponse>(&QueryRequest::Wasm(WasmQuery::Smart {
+        //                 contract_addr,
+        //                 callback_code_hash,
+        //                 msg: msg,
+        //             }))?;
+        //
+        //     return Ok(to_binary(&res)?);
+        // }
+        // QueryMsg::WasmRaw { contract_addr, key, callback_code_hash } => {
+        //     let res =
+        //         deps.querier
+        //             .query::<BalanceResponse>(&QueryRequest::Wasm(WasmQuery::Raw {
+        //                 contract_addr,
+        //                 key,
+        //                 callback_code_hash
+        //             }))?;
+        //
+        //     return Ok(to_binary(&res)?);
+        // }
         QueryMsg::DistRewards { delegator } => {
             let res =
                 deps.querier
-                    .query::<BalanceResponse>(&QueryRequest::Dist(DistQuery::Rewards {
+                    .query::<RewardsResponse>(&QueryRequest::Dist(DistQuery::Rewards {
                         delegator,
                     }))?;
 
@@ -301,14 +301,14 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
         QueryMsg::MintInflation {} => {
             let res =
                 deps.querier
-                    .query::<BalanceResponse>(&QueryRequest::Mint(MintQuery::Inflation {}))?;
+                    .query::<InflationResponse>(&QueryRequest::Mint(MintQuery::Inflation {}))?;
 
             return Ok(to_binary(&res)?);
         }
         QueryMsg::MintBondedRatio {} => {
             let res =
                 deps.querier
-                    .query::<BalanceResponse>(&QueryRequest::Mint(MintQuery::BondedRatio {
+                    .query::<BondedRatioResponse>(&QueryRequest::Mint(MintQuery::BondedRatio {
                     }))?;
 
             return Ok(to_binary(&res)?);
@@ -316,9 +316,10 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
         QueryMsg::GovProposals {} => {
             let res =
                 deps.querier
-                    .query::<BalanceResponse>(&QueryRequest::Gov(GovQuery::Proposals {}))?;
+                    .query::<ProposalsResponse>(&QueryRequest::Gov(GovQuery::Proposals {}))?;
 
             return Ok(to_binary(&res)?);
-        }
+        },
+        _ => Ok(to_binary("yes")?),
     }
 }
