@@ -1193,9 +1193,11 @@ describe("BankQuery", () => {
       expect(Number(result?.amount?.amount)).toBeGreaterThanOrEqual(1);
     });
   });
+});
 
-  describe("Staking Bonded Denom", () => {
-    test.only("v0.10", async () => {
+describe("Staking Query", () => {
+  describe("Bonded Denom", () => {
+    test("v0.10", async () => {
       const result: any = await readonly.query.compute.queryContract({
         contractAddress: contracts["secretdev-1"].v010.address,
         codeHash: contracts["secretdev-1"].v010.codeHash,
@@ -1203,8 +1205,77 @@ describe("BankQuery", () => {
           staking_bonded_denom: {},
         },
       });
-      console.log("result", result);
+
       expect(result?.denom).toBe("uscrt");
+    });
+  });
+
+  describe("All Delegations", () => {
+    describe("v0.10", () => {
+      test("success - validator has delegations", async () => {
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            staking_all_delegations: { delegator: accounts[0].address },
+          },
+        });
+
+        expect(result?.delegations.length).toBe(1);
+        expect(result?.delegations[0]).toStrictEqual(
+          {
+            delegator: "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03",
+            validator: "secretvaloper1ap26qrlp8mcq2pg6r47w43l0y8zkqm8aynpdzc",
+            amount: { denom: "uscrt", amount: "1000000" },
+          }
+        );
+      });
+
+      test("success - validator does not have delegations", async () => {
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            staking_all_delegations: { delegator: accounts[accounts.length - 1].address },
+          },
+        });
+
+        expect(result?.delegations.length).toBe(0);
+      });
+
+      test("fail - bad address", async () => {
+        console.log("readonly addr", readonly.address);
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            staking_all_delegations: { delegator: 'secret1nosuchaddress' },
+          },
+        });
+
+        expect(JSON.parse(result)?.generic_err?.msg).toBe("secret1nosuchaddress: invalid address");
+      });
+    });
+  });
+
+  describe("Validators", () => {
+    test.only("v0.10", async () => {
+      const result: any = await readonly.query.compute.queryContract({
+        contractAddress: contracts["secretdev-1"].v010.address,
+        codeHash: contracts["secretdev-1"].v010.codeHash,
+        query: {
+          staking_validators: {},
+        },
+      });
+      console.log("result", JSON.stringify(result));
+
+      expect(result?.validators.length).toBe(1);
+      expect(result?.validators[0]).toStrictEqual({
+        address: "secretvaloper1ap26qrlp8mcq2pg6r47w43l0y8zkqm8aynpdzc",
+        commission: "0.1",
+        max_commission: "0.2",
+        max_change_rate: "0.01"
+      });
     });
   });
 });
