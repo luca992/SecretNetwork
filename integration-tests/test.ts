@@ -1311,7 +1311,7 @@ describe("Staking Query", () => {
 describe("Distribution Query", () => {
   describe("Rewards", () => {
     describe("v0.10", () => {
-      test.only("success", async () => {
+      test("success", async () => {
         const result: any = await readonly.query.compute.queryContract({
           contractAddress: contracts["secretdev-1"].v010.address,
           codeHash: contracts["secretdev-1"].v010.codeHash,
@@ -1338,6 +1338,53 @@ describe("Distribution Query", () => {
 
         expect(JSON.parse(result)?.generic_err?.msg).toBe("secret1nosuchaddress: invalid address");
       });
+    });
+  });
+});
+
+describe("Mint Query", () => {
+  describe("Inflation", () => {
+    test("v0.10", async () => {
+      const result: any = await readonly.query.compute.queryContract({
+        contractAddress: contracts["secretdev-1"].v010.address,
+        codeHash: contracts["secretdev-1"].v010.codeHash,
+        query: {
+          mint_inflation: {},
+        },
+      });
+
+      expect(Number(result?.inflation_rate)).toEqual(expect.closeTo(0.13007, 2));
+    });
+  });
+
+  describe("Bonded Ratio", () => {
+    test("v0.10", async () => {
+      const result: any = await readonly.query.compute.queryContract({
+        contractAddress: contracts["secretdev-1"].v010.address,
+        codeHash: contracts["secretdev-1"].v010.codeHash,
+        query: {
+          mint_bonded_ratio: {},
+        },
+      });
+
+      expect(Number(result?.bonded_ratio)).toEqual(expect.closeTo(0.0000000000002, 13));
+    });
+  });
+});
+
+describe("Gov Query", () => {
+  describe("Proposals", () => {
+    test.only("v0.10", async () => {
+      const result: any = await readonly.query.compute.queryContract({
+        contractAddress: contracts["secretdev-1"].v010.address,
+        codeHash: contracts["secretdev-1"].v010.codeHash,
+        query: {
+          gov_proposals: {},
+        },
+      });
+      console.log("result", result);
+
+      expect(Number(result?.proposals.length)).toEqual(0);
     });
   });
 });
