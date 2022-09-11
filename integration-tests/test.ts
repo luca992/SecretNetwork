@@ -1374,7 +1374,7 @@ describe("Mint Query", () => {
 
 describe("Gov Query", () => {
   describe("Proposals", () => {
-    test.only("v0.10", async () => {
+    test("v0.10", async () => {
       const result: any = await readonly.query.compute.queryContract({
         contractAddress: contracts["secretdev-1"].v010.address,
         codeHash: contracts["secretdev-1"].v010.codeHash,
@@ -1384,7 +1384,9 @@ describe("Gov Query", () => {
       });
       console.log("result", result);
 
-      expect(Number(result?.proposals.length)).toEqual(0);
+      result?.proposals.forEach(proposal => {
+        expect(Object.keys(proposal)).toEqual(expect.arrayContaining(["id", "voting_start_time", "voting_end_time"]));
+      })
     });
   });
 });
