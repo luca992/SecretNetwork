@@ -1362,7 +1362,7 @@ describe("Staking Query", () => {
 });
 
 describe("Wasm Query", () => {
-  describe.only("v0.10", () => {
+  describe("v0.10", () => {
     test("success - query v1 contract", async () => {
       const result: any = await readonly.query.compute.queryContract({
         contractAddress: contracts["secretdev-1"].v010.address,
