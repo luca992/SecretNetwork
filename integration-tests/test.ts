@@ -1224,7 +1224,7 @@ describe("Staking Query", () => {
         expect(result?.delegations.length).toBe(1);
         expect(result?.delegations[0]).toStrictEqual(
           {
-            delegator: "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03",
+            delegator: accounts[0].address,
             validator: "secretvaloper1ap26qrlp8mcq2pg6r47w43l0y8zkqm8aynpdzc",
             amount: { denom: "uscrt", amount: "1000000" },
           }
@@ -1250,6 +1250,59 @@ describe("Staking Query", () => {
           codeHash: contracts["secretdev-1"].v010.codeHash,
           query: {
             staking_all_delegations: { delegator: 'secret1nosuchaddress' },
+          },
+        });
+
+        expect(JSON.parse(result)?.generic_err?.msg).toBe("secret1nosuchaddress: invalid address");
+      });
+    });
+  });
+
+  // skipping since the contract has an error when parsing the delegation response type
+  describe.skip("Delegation", () => {
+    describe("v0.10", () => {
+      test("success - validator has delegations", async () => {
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            staking_delegation: {
+              delegator: accounts[0].address,
+              validator: "secretvaloper1ap26qrlp8mcq2pg6r47w43l0y8zkqm8aynpdzc",
+            },
+          },
+        });
+
+        console.log("result", result);
+        expect(result?.delegations.length).toBe(1);
+        expect(result?.delegations[0]).toStrictEqual(
+          {
+            delegator: "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03",
+            validator: "secretvaloper1ap26qrlp8mcq2pg6r47w43l0y8zkqm8aynpdzc",
+            amount: { denom: "uscrt", amount: "1000000" },
+          }
+        );
+      });
+
+      test("success - validator does not have delegations", async () => {
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            staking_delegation: { delegator: accounts[accounts.length - 1].address, validator: accounts[0].address },
+          },
+        });
+
+        expect(result?.delegations.length).toBe(0);
+      });
+
+      test("fail - bad addresses", async () => {
+        console.log("readonly addr", readonly.address);
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            staking_delegation: { validator: 'secret1nosuchaddress', delegator: 'secret1nosuchaddress' },
           },
         });
 
@@ -1304,6 +1357,27 @@ describe("Staking Query", () => {
       });
 
       expect(JSON.parse(result)?.generic_err?.msg).toBe("secret1nosuchaddress: invalid address");
+    });
+  });
+});
+
+describe("Wasm Query", () => {
+  describe.only("v0.10", () => {
+    test("success - query v1 contract", async () => {
+      const result: any = await readonly.query.compute.queryContract({
+        contractAddress: contracts["secretdev-1"].v010.address,
+        codeHash: contracts["secretdev-1"].v010.codeHash,
+        query: {
+          wasm_smart: {
+            contract_addr: contracts["secretdev-1"].v1.address,
+            callback_code_hash: contracts["secretdev-1"].v1.codeHash,
+            msg: toBase64(Buffer.from('{ "last_ibc_ack": {} }')),
+          },
+        },
+      });
+
+      console.log("result", result);
+      expect(result).toBe("no ack yet");
     });
   });
 });
