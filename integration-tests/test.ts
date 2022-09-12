@@ -1362,41 +1362,64 @@ describe("Staking Query", () => {
 });
 
 describe("Wasm Query", () => {
-  describe("v0.10", () => {
-    test("success - query v1 contract", async () => {
-      const result: any = await readonly.query.compute.queryContract({
-        contractAddress: contracts["secretdev-1"].v010.address,
-        codeHash: contracts["secretdev-1"].v010.codeHash,
-        query: {
-          wasm_smart: {
-            contract_addr: contracts["secretdev-1"].v1.address,
-            callback_code_hash: contracts["secretdev-1"].v1.codeHash,
-            msg: toBase64(Buffer.from('{ "last_ibc_ack": {} }')),
+  describe("Smart", () => {
+    describe("v0.10", () => {
+      test("success - query v1 contract", async () => {
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            wasm_smart: {
+              contract_addr: contracts["secretdev-1"].v1.address,
+              callback_code_hash: contracts["secretdev-1"].v1.codeHash,
+              msg: toBase64(Buffer.from('{ "last_ibc_ack": {} }')),
+            },
           },
-        },
+        });
+
+        expect(result).toBe("no ack yet");
       });
 
-      expect(result).toBe("no ack yet");
+      test("fail - unexistent v1 message", async () => {
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            wasm_smart: {
+              contract_addr: contracts["secretdev-1"].v1.address,
+              callback_code_hash: contracts["secretdev-1"].v1.codeHash,
+              msg: toBase64(Buffer.from('{ "no_such_message": {} }')),
+            },
+          },
+        });
+
+        const parsedRes = JSON.parse(result);
+        expect(parsedRes?.generic_err.msg.startsWith(
+          "Querier system error: Cannot parse response: expected value at line 1 column 1 in: " +
+          "Error parsing into type contract_v1::msg::QueryMsg: unknown variant `no_such_message`"
+        )).toBe(true);
+      });
     });
+  });
 
-    test("fail - unexistent v1 message", async () => {
-      const result: any = await readonly.query.compute.queryContract({
-        contractAddress: contracts["secretdev-1"].v010.address,
-        codeHash: contracts["secretdev-1"].v010.codeHash,
-        query: {
-          wasm_smart: {
-            contract_addr: contracts["secretdev-1"].v1.address,
-            callback_code_hash: contracts["secretdev-1"].v1.codeHash,
-            msg: toBase64(Buffer.from('{ "no_such_message": {} }')),
+  describe("Raw", () => {
+    describe("v0.10", () => {
+      test.only("should always return empty result", async () => {
+        const result: any = await readonly.query.compute.queryContract({
+          contractAddress: contracts["secretdev-1"].v010.address,
+          codeHash: contracts["secretdev-1"].v010.codeHash,
+          query: {
+            wasm_raw: {
+              contract_addr: contracts["secretdev-1"].v1.address,
+              callback_code_hash: contracts["secretdev-1"].v1.codeHash,
+              key: toBase64(Buffer.from('rawvalue')),
+            },
           },
-        },
-      });
+        });
 
-      const parsedRes = JSON.parse(result);
-      expect(parsedRes?.generic_err.msg.startsWith(
-        "Querier system error: Cannot parse response: expected value at line 1 column 1 in: " +
-        "Error parsing into type contract_v1::msg::QueryMsg: unknown variant `no_such_message`"
-      )).toBe(true);
+        console.log("result", result);
+        expect(result).toStrictEqual([]);
+      });
     });
   });
 });

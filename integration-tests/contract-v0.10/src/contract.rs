@@ -267,28 +267,29 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
 
             return Ok(to_binary(&res)?);
         }
-        // QueryMsg::WasmSmart { contract_addr, callback_code_hash, msg } => {
-        //     let res =
-        //         deps.querier
-        //             .query::<SmartResponse>(&QueryRequest::Wasm(WasmQuery::Smart {
-        //                 contract_addr,
-        //                 callback_code_hash,
-        //                 msg: msg,
-        //             }))?;
-        //
-        //     return Ok(to_binary(&res)?);
-        // }
-        // QueryMsg::WasmRaw { contract_addr, key, callback_code_hash } => {
-        //     let res =
-        //         deps.querier
-        //             .query::<BalanceResponse>(&QueryRequest::Wasm(WasmQuery::Raw {
-        //                 contract_addr,
-        //                 key,
-        //                 callback_code_hash
-        //             }))?;
-        //
-        //     return Ok(to_binary(&res)?);
-        // }
+        QueryMsg::WasmSmart { contract_addr, callback_code_hash, msg } => {
+            let res =
+                deps.querier
+                    .query::<String>(&QueryRequest::Wasm(WasmQuery::Smart {
+                        contract_addr,
+                        callback_code_hash,
+                        msg: msg,
+                    }))?;
+
+            return Ok(to_binary(&res)?);
+        }
+        QueryMsg::WasmRaw { contract_addr, key, callback_code_hash } => {
+            // should always fail
+            let res =
+                deps.querier
+                    .query::<Vec<u8>>(&QueryRequest::Wasm(WasmQuery::Raw {
+                        contract_addr,
+                        key,
+                        callback_code_hash
+                    }))?;
+
+            return Ok(to_binary(&res)?);
+        }
         QueryMsg::DistRewards { delegator } => {
             let res =
                 deps.querier
