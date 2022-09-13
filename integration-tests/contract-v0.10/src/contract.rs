@@ -4,6 +4,7 @@ use cosmwasm_std::{to_binary, Api, BalanceResponse, BankMsg, BankQuery, Binary, 
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde::de::DeserializeOwned;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -214,6 +215,28 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
 }
 
 /////////////////////////////// Query ///////////////////////////////
+/// Temporary: These data structures are missing from std exports
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct DelegationResponse {
+    pub delegation: Option<FullDelegation>,
+}
+
+/// FullDelegation is all the info on the delegation, some (like accumulated_reward and can_redelegate)
+/// is expensive to query
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct FullDelegation {
+    pub delegator: HumanAddr,
+    pub validator: HumanAddr,
+    pub amount: Coin,
+    pub can_redelegate: Coin,
+    pub accumulated_rewards: Vec<Coin>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct DebugResult {
+    pub result: String,
+}
 
 pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryMsg) -> QueryResult {
     match msg {
@@ -241,16 +264,17 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
 
             return Ok(to_binary(&res)?);
         }
-        // QueryMsg::StakingDelegation { delegator, validator } => {
-        //     let res =
-        //         deps.querier
-        //             .query::<DelegationResponse>(&QueryRequest::Staking(StakingQuery::Delegation {
-        //                 delegator,
-        //                 validator,
-        //             }))?;
-        //
-        //     return Ok(to_binary(&res)?);
-        // }
+        QueryMsg::StakingDelegation { delegator, validator } => {
+            print!("entered staking delegation query");
+            let res =
+                deps.querier
+                    .query::<DelegationResponse>(&QueryRequest::Staking(StakingQuery::Delegation {
+                        delegator,
+                        validator,
+                    }))?;
+
+            return Ok(to_binary(&res)?);
+        }
         QueryMsg::StakingValidators {} => {
             let res =
                 deps.querier
@@ -321,6 +345,5 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
 
             return Ok(to_binary(&res)?);
         },
-        _ => Ok(to_binary("yes")?),
     }
 }

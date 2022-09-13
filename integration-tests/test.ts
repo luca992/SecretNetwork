@@ -1259,7 +1259,7 @@ describe("Staking Query", () => {
   });
 
   // skipping since the contract has an error when parsing the delegation response type
-  describe.skip("Delegation", () => {
+  describe("Delegation", () => {
     describe("v0.10", () => {
       test("success - validator has delegations", async () => {
         const result: any = await readonly.query.compute.queryContract({
@@ -1273,31 +1273,32 @@ describe("Staking Query", () => {
           },
         });
 
-        console.log("result", result);
-        expect(result?.delegations.length).toBe(1);
-        expect(result?.delegations[0]).toStrictEqual(
-          {
-            delegator: "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03",
-            validator: "secretvaloper1ap26qrlp8mcq2pg6r47w43l0y8zkqm8aynpdzc",
-            amount: { denom: "uscrt", amount: "1000000" },
-          }
+        expect(result?.delegation.delegator).toBe("secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03");
+        expect(result?.delegation.validator).toBe("secretvaloper1ap26qrlp8mcq2pg6r47w43l0y8zkqm8aynpdzc");
+        expect(result?.delegation.amount).toStrictEqual({ denom: "uscrt", amount: "1000000" });
+        expect(result?.delegation.can_redelegate).toStrictEqual({ denom: "uscrt", amount: "1000000" });
+        result?.delegation.accumulated_rewards.forEach(reward =>
+          expect(Object.keys(reward)).toEqual(expect.arrayContaining(["denom", "amount"]))
         );
       });
 
-      test("success - validator does not have delegations", async () => {
+      test.only("success - validator does not have delegations", async () => {
         const result: any = await readonly.query.compute.queryContract({
           contractAddress: contracts["secretdev-1"].v010.address,
           codeHash: contracts["secretdev-1"].v010.codeHash,
           query: {
-            staking_delegation: { delegator: accounts[accounts.length - 1].address, validator: accounts[0].address },
+            staking_delegation: {
+              delegator: accounts[accounts.length - 1].address,
+              validator: "secretvaloper1ap26qrlp8mcq2pg6r47w43l0y8zkqm8aynpdzc"
+            },
           },
         });
 
-        expect(result?.delegations.length).toBe(0);
+        console.log("result", result);
+        expect(result?.delegation).toBeNull();
       });
 
-      test("fail - bad addresses", async () => {
-        console.log("readonly addr", readonly.address);
+      test.only("fail - bad addresses", async () => {
         const result: any = await readonly.query.compute.queryContract({
           contractAddress: contracts["secretdev-1"].v010.address,
           codeHash: contracts["secretdev-1"].v010.codeHash,
@@ -1404,7 +1405,7 @@ describe("Wasm Query", () => {
 
   describe("Raw", () => {
     describe("v0.10", () => {
-      test.only("should always return empty result", async () => {
+      test("should always return empty result", async () => {
         const result: any = await readonly.query.compute.queryContract({
           contractAddress: contracts["secretdev-1"].v010.address,
           codeHash: contracts["secretdev-1"].v010.codeHash,
