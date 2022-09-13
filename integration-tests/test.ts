@@ -1282,7 +1282,7 @@ describe("Staking Query", () => {
         );
       });
 
-      test.only("success - validator does not have delegations", async () => {
+      test("success - validator does not have delegations", async () => {
         const result: any = await readonly.query.compute.queryContract({
           contractAddress: contracts["secretdev-1"].v010.address,
           codeHash: contracts["secretdev-1"].v010.codeHash,
@@ -1294,7 +1294,6 @@ describe("Staking Query", () => {
           },
         });
 
-        console.log("result", result);
         expect(result?.delegation).toBeNull();
       });
 
@@ -1418,7 +1417,6 @@ describe("Wasm Query", () => {
           },
         });
 
-        console.log("result", result);
         expect(result).toStrictEqual([]);
       });
     });
@@ -1499,7 +1497,6 @@ describe("Gov Query", () => {
           gov_proposals: {},
         },
       });
-      console.log("result", result);
 
       result?.proposals.forEach(proposal => {
         expect(Object.keys(proposal)).toEqual(expect.arrayContaining(["id", "voting_start_time", "voting_end_time"]));
