@@ -1060,8 +1060,7 @@ describe("Wasm Query", () => {
         expect(result).toBe("no ack yet");
       });
 
-      test.only("fail - unexistent v1 message", async () => {
-
+      test("fail - unexistent v1 message", async () => {
         const result: any = await readonly.query.compute.queryContract({
           contractAddress: contracts["secretdev-1"].v010.address,
           codeHash: contracts["secretdev-1"].v010.codeHash,
@@ -1075,7 +1074,7 @@ describe("Wasm Query", () => {
         });
 
         const parsedRes = JSON.parse(result);
-        console.log("reuslt", result);
+        console.log("result", result);
         expect(parsedRes?.generic_err.msg.startsWith(
           "Querier system error: Cannot parse response: expected value at line 1 column 1 in: " +
           "Error parsing into type contract_v1::msg::QueryMsg: unknown variant `no_such_message`"
