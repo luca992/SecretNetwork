@@ -1298,7 +1298,7 @@ describe("Staking Query", () => {
         expect(result?.delegation).toBeNull();
       });
 
-      test.only("fail - bad addresses", async () => {
+      test("fail - bad addresses", async () => {
         const result: any = await readonly.query.compute.queryContract({
           contractAddress: contracts["secretdev-1"].v010.address,
           codeHash: contracts["secretdev-1"].v010.codeHash,
