@@ -81,6 +81,7 @@ pub enum QueryMsg {
     MintInflation {},
     MintBondedRatio {},
     GovProposals {},
+    LastIbcAck {},
 }
 
 /////////////////////////////// Init ///////////////////////////////
@@ -90,6 +91,8 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
     _env: Env,
     _msg: Msg,
 ) -> InitResult {
+    raw_set(&mut _deps.storage, "no ack yet".to_string());
+
     return Ok(InitResponse {
         messages: vec![],
         log: vec![],
@@ -345,5 +348,20 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
 
             return Ok(to_binary(&res)?);
         },
+        QueryMsg::LastIbcAck {} => {
+            let res = raw_read(&deps.storage);
+            return Ok(to_binary(&res)?);
+        },
     }
+}
+
+// define storage funcs in state.rs:
+pub const RAW_KEY: &[u8] = b"last_ack";
+pub fn raw_set(storage: &mut dyn Storage, value: String) {
+    storage.set(RAW_KEY, value.as_bytes());
+}
+
+pub fn raw_read(storage: &dyn Storage) -> String {
+    let current_raw = storage.get(RAW_KEY).unwrap();
+    String::from_utf8(current_raw.clone()).unwrap()
 }
