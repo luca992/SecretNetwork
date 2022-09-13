@@ -147,6 +147,7 @@ beforeAll(async () => {
 
   console.log("Storing contracts on secretdev-1...");
   let tx: Tx = await storeContracts(accounts[0].secretjs, [v010Wasm]);
+  console.log("finished Storing contracts on secretdev-1...");
 
   contracts["secretdev-1"].v010.codeId = Number(
     tx.arrayLog.reverse().find((x) => x.key === "code_id").value
@@ -862,7 +863,7 @@ describe("BankQuery", () => {
   });
 });
 
-describe("Staking Query", () => {
+describe.only("Staking Query", () => {
   describe("Bonded Denom", () => {
     test("v0.10", async () => {
       const result: any = await readonly.query.compute.queryContract({
