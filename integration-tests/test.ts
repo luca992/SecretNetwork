@@ -298,6 +298,7 @@ describe("CustomMsg", () => {
       { gasLimit: 250_000 }
     );
     if (tx.code !== 10) {
+      console.error("actual tx code:", tx.code);
       console.error(tx.rawLog);
     }
     expect(tx.code).toBe(10 /* WASM ErrInvalidMsg */);
@@ -466,7 +467,7 @@ describe("Wasm", () => {
         }
         expect(tx.code).toBe(2 /* WASM ErrInstantiateFailed */);
 
-        expect(tx.rawLog).toContain("encrypted:");
+        expect(tx.rawLog).toContain("unknown variant `blabla`");
         expect(tx.rawLog).toContain("instantiate contract failed");
       });
     });
@@ -530,7 +531,7 @@ describe("Wasm", () => {
         }
         expect(tx.code).toBe(3 /* WASM ErrExecuteFailed */);
 
-        expect(tx.rawLog).toContain("encrypted:");
+        expect(tx.rawLog).toContain("unknown variant `blabla`");
         expect(tx.rawLog).toContain("execute contract failed");
       });
     });
@@ -1075,10 +1076,8 @@ describe("Wasm Query", () => {
 
         const parsedRes = JSON.parse(result);
         console.log("result", result);
-        expect(parsedRes?.generic_err.msg.startsWith(
-          "Querier system error: Cannot parse response: expected value at line 1 column 1 in: " +
-          "Error parsing into type contract_v1::msg::QueryMsg: unknown variant `no_such_message`"
-        )).toBe(true);
+        const receivedErrorMessage = parsedRes?.generic_err?.msg || parsedRes?.parse_err.msg;
+        expect(receivedErrorMessage).toContain('unknown variant `no_such_message`');
       });
     });
   });
