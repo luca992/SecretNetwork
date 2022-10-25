@@ -24,7 +24,7 @@ ENV VERSION=${BUILD_VERSION}
 ENV SGX_MODE=${SGX_MODE}
 ENV FEATURES=${FEATURES}
 ENV FEATURES_U=${FEATURES_U}
-ENV MITIGATION_CVE_2020_0551=LOAD
+ENV MITIGATION_CVE_2020_0551=""
 
 COPY rust-toolchain rust-toolchain
 RUN rustup component add rust-src
@@ -40,7 +40,7 @@ COPY cosmwasm cosmwasm/
 WORKDIR /go/src/github.com/enigmampc/SecretNetwork/go-cosmwasm
 
 RUN . /opt/sgxsdk/environment && env \
-    && MITIGATION_CVE_2020_0551=LOAD VERSION=${VERSION} FEATURES=${FEATURES} FEATURES_U=${FEATURES_U} SGX_MODE=${SGX_MODE} make build-rust
+    && MITIGATION_CVE_2020_0551=${MITIGATION_CVE_2020_0551} VERSION=${VERSION} FEATURES=${FEATURES} FEATURES_U=${FEATURES_U} SGX_MODE=${SGX_MODE} make build-rust
 
 ENTRYPOINT ["/bin/bash"]
 
@@ -68,7 +68,7 @@ ENV VERSION=${BUILD_VERSION}
 ENV SGX_MODE=${SGX_MODE}
 ENV FEATURES=${FEATURES}
 ENV FEATURES_U=${FEATURES_U}
-ENV MITIGATION_CVE_2020_0551=LOAD
+ENV MITIGATION_CVE_2020_0551=""
 
 # Add source files
 COPY go-cosmwasm go-cosmwasm
@@ -107,6 +107,6 @@ RUN --mount=type=secret,id=API_KEY,dst=/run/secrets/api_key.txt cat /run/secrets
 RUN --mount=type=secret,id=API_KEY,dst=/run/secrets/api_key.txt cat /run/secrets/api_key.txt >  /go/src/github.com/enigmampc/SecretNetwork/ias_keys/production/api_key.txt
 
 RUN . /opt/sgxsdk/environment && env && CGO_LDFLAGS=${CGO_LDFLAGS} DB_BACKEND=${DB_BACKEND} MITIGATION_CVE_2020_0551=LOAD VERSION=${VERSION} FEATURES=${FEATURES} SGX_MODE=${SGX_MODE} make build_local_no_rust
-RUN . /opt/sgxsdk/environment && env && MITIGATION_CVE_2020_0551=LOAD VERSION=${VERSION} FEATURES=${FEATURES} SGX_MODE=${SGX_MODE} make build_cli
+RUN . /opt/sgxsdk/environment && env && MITIGATION_CVE_2020_0551=${MITIGATION_CVE_2020_0551} VERSION=${VERSION} FEATURES=${FEATURES} SGX_MODE=${SGX_MODE} make build_cli
 
 ENTRYPOINT ["/bin/bash"]
